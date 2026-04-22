@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>🚀 Космический бой — игрок</title>
+  <link rel="stylesheet" href="/static/shared/theme.css">
+  <link rel="stylesheet" href="/static/play/play.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="title">
+    <h1>🚀 Космический бой</h1>
+    <span class="sub">Кабинет игрока</span>
+  </div>
+  <div class="row" id="player-status">
+    <span class="small muted" id="player-label">—</span>
+  </div>
+</header>
+
+<main class="page stack">
+  <section class="panel stack" id="screen-lobby">
+    <h2>Подготовка к бою</h2>
+    <p class="small muted">
+      Капитан получает все данные разведки сам — отдельная роль радиста не нужна.
+      Выберите роль, чтобы присоединиться к команде.
+    </p>
+    <div class="row">
+      <button class="primary" onclick="claimRole('captain')">🎖 Стать капитаном</button>
+      <button onclick="claimRole('crew')">👥 Вступить в экипаж</button>
+    </div>
+  </section>
+
+  <section class="panel stack hidden" id="screen-game">
+    <h2>Управление кораблями</h2>
+    <p class="small muted">
+      Для каждого корабля выберите действие в выпадающем списке. Для перемещения,
+      атаки, мины и голограммы укажите координаты цели (X, Y, Z от 0 до 9).
+    </p>
+    <div id="my-ships"></div>
+  </section>
+</main>
+
+<script type="module" src="/static/play/play.js"></script>
+</body>
+</html>
