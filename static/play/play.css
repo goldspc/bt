@@ -1,0 +1,32 @@
+.ship-card {
+    background: #1a1a2e;
+    border: 1px solid #30305a;
+    padding: 8px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+}
+.action-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 8px;
+}
+.act-select {
+    flex: 1;
+    background: #0f3460;
+    color: white;
+    border: 1px solid #16213e;
+    border-radius: 4px;
+}
+.coords-row {
+    display: flex;
+    gap: 2px;
+}
+.coords-row input {
+    width: 32px;
+    background: #0f3460;
+    border: 1px solid #16213e;
+    color: white;
+    text-align: center;
+}
+.hidden { display: none; }
