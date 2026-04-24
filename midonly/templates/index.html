@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MidOnly.GG — Dota 2 1x1 Mid Lobby</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#9876;</text></svg>">
+    <style>
+        /* ===== CSS Variables (Dire Theme - Default) ===== */
+        :root {
+            --bg-color: #0d1117;
+            --bg-gradient-start: #1a1e24;
+            --panel-bg: rgba(22, 27, 34, 0.85);
+            --border-color: rgba(211, 47, 47, 0.4);
+            --primary: #d32f2f;
+            --primary-hover: #f44336;
+            --text-main: #e6edf3;
+            --text-muted: #8b949e;
+            --gold: #d4af37;
+            --glass-blur: blur(12px);
+            --success: #2ea043;
+            --danger: #f85149;
+        }
+
+        /* Radiant Theme */
+        body.radiant-theme {
+            --bg-color: #0b1713;
+            --bg-gradient-start: #11231c;
+            --border-color: rgba(46, 160, 67, 0.4);
+            --primary: #2ea043;
+            --primary-hover: #3fb950;
+            --gold: #f2c94c;
+        }
+
+        /* ===== Reset & Base ===== */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: radial-gradient(circle at top, var(--bg-gradient-start) 0%, var(--bg-color) 100%);
+            color: var(--text-main);
+            min-height: 100vh;
+            transition: background 0.5s ease;
+            overflow-x: hidden;
+        }
+
+        /* ===== Header ===== */
+        .header {
+            background: rgba(13, 17, 23, 0.95);
+            padding: 0 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 60px;
+            backdrop-filter: var(--glass-blur);
+            transition: border-color 0.5s ease;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-weight: 800;
+            color: var(--primary);
+            font-size: 22px;
+            letter-spacing: -1px;
+            transition: color 0.5s;
+            text-decoration: none;
+        }
+        .logo span { color: white; }
+
+        .header-left { display: flex; align-items: center; gap: 20px; }
+        .header-right { display: flex; align-items: center; gap: 16px; }
+
+        /* Theme Switch */
+        .theme-switch {
+            display: flex;
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .theme-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 6px 16px;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: 0.3s;
+        }
+        .theme-btn.active.dire { background: #d32f2f; color: white; }
+        .theme-btn.active.radiant { background: #2ea043; color: white; }
+
+        /* User block */
+        .user-block {
+            display: flex; align-items: center; gap: 12px;
+            background: rgba(255,255,255,0.03);
+            padding: 6px 16px; border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.07);
+        }
+        .nickname { color: var(--text-main); font-weight: 600; font-size: 14px; }
+        .mmr-val { color: var(--gold); font-weight: bold; font-size: 14px; transition: color 0.5s; }
+
+        .btn {
+            border: none; color: white; padding: 8px 16px; border-radius: 6px; cursor: pointer;
+            font-weight: 600; font-size: 12px; text-transform: uppercase; transition: all 0.3s;
+            display: inline-flex; align-items: center; gap: 6px;
+        }
+        .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+        .btn-primary { background: var(--primary); }
+        .btn-primary:hover { background: var(--primary-hover); }
+        .btn-outline { background: transparent; border: 1px solid rgba(255,255,255,0.2); color: var(--text-main); }
+        .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+        .btn-gold { background: linear-gradient(135deg, #d4af37, #b8941e); }
+        .btn-gold:hover { background: linear-gradient(135deg, #e6c34a, #d4af37); }
+        .btn-sm { padding: 5px 12px; font-size: 10px; }
+        .btn-lg { padding: 12px 24px; font-size: 14px; width: 100%; justify-content: center; }
+
+        /* ===== Layout ===== */
+        .layout-wrapper {
+            max-width: 1920px;
+            margin: 0 auto;
+            height: calc(100vh - 60px);
+        }
+
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 1.1fr 1fr;
+            gap: 16px;
+            padding: 16px;
+            height: 100%;
+        }
+
+        /* ===== Panel ===== */
+        .panel {
+            background: var(--panel-bg);
+            backdrop-filter: var(--glass-blur);
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            min-height: 0;
+            transition: border-color 0.3s;
+        }
+
+        .panel-header {
+            padding: 14px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            font-weight: bold;
+            color: var(--primary);
+            text-transform: uppercase;
+            font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            min-height: 50px;
+            transition: color 0.5s ease;
+        }
+
+        /* ===== Chat ===== */
+        .chat-tabs {
+            display: flex;
+            background: rgba(0,0,0,0.2);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .tab {
+            padding: 14px 20px; cursor: pointer; font-size: 12px;
+            font-weight: bold; color: var(--text-muted); text-transform: uppercase;
+            transition: all 0.3s; border-bottom: 2px solid transparent;
+            user-select: none;
+        }
+        .tab:hover { color: var(--text-main); }
+        .tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+        .chat-area {
+            flex: 1; overflow-y: auto; padding: 16px;
+            display: flex; flex-direction: column; gap: 8px;
+        }
+        .msg {
+            font-size: 14px; line-height: 1.6;
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.02);
+            animation: fadeIn 0.3s ease;
+        }
+        .msg-user {
+            color: var(--gold); font-weight: 600; margin-right: 8px;
+            transition: color 0.5s;
+        }
+
+        .chat-input-box {
+            padding: 12px; border-top: 1px solid rgba(255,255,255,0.05);
+            display: flex; gap: 8px; background: rgba(0,0,0,0.1);
+        }
+        .chat-input-box input {
+            flex: 1; background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: white; padding: 10px 14px; border-radius: 8px; outline: none;
+            font-size: 14px; transition: border-color 0.3s;
+        }
+        .chat-input-box input:focus { border-color: var(--primary); }
+        .chat-input-box input::placeholder { color: var(--text-muted); }
+
+        /* ===== Lobby List ===== */
+        .lobby-list {
+            flex: 1; overflow-y: auto; padding: 12px;
+            display: flex; flex-direction: column; gap: 10px;
+        }
+        .lobby-card {
+            background: rgba(255,255,255,0.02);
+            border-radius: 10px; padding: 14px;
+            border: 1px solid rgba(255,255,255,0.05);
+            display: flex; align-items: center; gap: 14px;
+            transition: all 0.3s; cursor: pointer;
+        }
+        .lobby-card:hover {
+            border-color: var(--primary);
+            background: rgba(255,255,255,0.04);
+            transform: translateX(4px);
+        }
+        .lobby-card.selected {
+            border-color: var(--gold);
+            background: rgba(212, 175, 55, 0.08);
+        }
+
+        .hero-icon {
+            width: 52px; height: 52px; border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.1);
+            object-fit: cover; background: #000;
+        }
+
+        .lobby-info { flex: 1; }
+        .lobby-title { font-weight: bold; font-size: 15px; margin-bottom: 4px; }
+        .lobby-meta { font-size: 12px; color: var(--text-muted); }
+
+        .lobby-badge {
+            font-size: 10px; font-weight: bold; text-transform: uppercase;
+            padding: 3px 8px; border-radius: 4px;
+            background: rgba(46, 160, 67, 0.15); color: var(--success);
+        }
+
+        /* ===== Match Details (Right Panel) ===== */
+        .match-detail { padding: 20px; flex: 1; overflow-y: auto; }
+
+        .detail-hero-banner {
+            display: flex; align-items: center; gap: 16px;
+            margin-bottom: 20px; padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .detail-hero-banner img {
+            width: 72px; height: 72px; border-radius: 10px;
+            border: 2px solid var(--primary);
+        }
+
+        .rules-container {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 10px;
+            padding: 16px; margin: 16px 0;
+            border-left: 4px solid var(--primary);
+            transition: border-color 0.5s ease;
+        }
+        .rules-title {
+            color: var(--gold); font-size: 12px; font-weight: bold;
+            margin-bottom: 8px; text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .rules-text { font-size: 14px; line-height: 1.8; color: var(--text-main); }
+        .rules-text span { display: block; padding: 2px 0; }
+
+        .empty-state {
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; height: 100%; color: var(--text-muted);
+            text-align: center; gap: 12px; padding: 40px;
+        }
+        .empty-state .icon { font-size: 48px; opacity: 0.3; }
+
+        /* ===== Modal ===== */
+        .modal-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.7); z-index: 200;
+            justify-content: center; align-items: center;
+            backdrop-filter: blur(4px);
+        }
+        .modal-overlay.active { display: flex; }
+        .modal {
+            background: #161b22; border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.1);
+            width: 90%; max-width: 520px; max-height: 85vh;
+            overflow-y: auto; animation: slideUp 0.3s ease;
+        }
+        .modal-header {
+            padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.05);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .modal-header h3 { font-size: 18px; color: var(--primary); }
+        .modal-close {
+            background: none; border: none; color: var(--text-muted);
+            font-size: 24px; cursor: pointer; padding: 0 4px;
+        }
+        .modal-close:hover { color: white; }
+        .modal-body { padding: 24px; }
+
+        .form-group { margin-bottom: 16px; }
+        .form-group label {
+            display: block; font-size: 12px; font-weight: 600;
+            color: var(--text-muted); text-transform: uppercase;
+            margin-bottom: 6px; letter-spacing: 0.5px;
+        }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%; padding: 10px 14px; border-radius: 8px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: white; font-size: 14px; outline: none;
+            transition: border-color 0.3s;
+        }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            border-color: var(--primary);
+        }
+        .form-group select option { background: #161b22; }
+        .form-group textarea { resize: vertical; min-height: 80px; font-family: inherit; }
+
+        .hero-grid {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
+            margin-top: 8px;
+        }
+        .hero-option {
+            position: relative; cursor: pointer; border-radius: 8px;
+            overflow: hidden; border: 2px solid transparent;
+            transition: all 0.3s;
+        }
+        .hero-option:hover { border-color: var(--primary); transform: scale(1.05); }
+        .hero-option.selected { border-color: var(--gold); }
+        .hero-option img { width: 100%; height: auto; display: block; }
+        .hero-option .hero-name {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            background: rgba(0,0,0,0.8); font-size: 9px;
+            padding: 3px; text-align: center; font-weight: 600;
+        }
+
+        /* ===== Online counter ===== */
+        .online-indicator {
+            display: flex; align-items: center; gap: 6px;
+            font-size: 12px; color: var(--text-muted);
+        }
+        .online-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: var(--success); animation: pulse 2s infinite;
+        }
+
+        /* ===== Scrollbar ===== */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+        /* ===== Animations ===== */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: none; } }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+        /* ===== Responsive ===== */
+        @media (max-width: 1200px) {
+            .main-layout { grid-template-columns: 1fr 1fr; }
+            .main-layout > :first-child { display: none; }
+        }
+        @media (max-width: 768px) {
+            .header { padding: 0 12px; height: 56px; }
+            .logo { font-size: 18px; }
+            .theme-switch { display: none; }
+            .user-block { display: none; }
+            .main-layout {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto 1fr;
+                height: auto; min-height: calc(100vh - 56px);
+            }
+            .main-layout > :first-child { display: none; }
+            .main-layout > :last-child { min-height: 400px; }
+            .mobile-tabs { display: flex !important; }
+        }
+
+        /* Mobile bottom tabs */
+        .mobile-tabs {
+            display: none;
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: rgba(13, 17, 23, 0.98);
+            border-top: 1px solid var(--border-color);
+            z-index: 100; justify-content: space-around;
+            padding: 8px 0;
+        }
+        .mobile-tab {
+            background: none; border: none; color: var(--text-muted);
+            font-size: 10px; padding: 6px 12px; cursor: pointer;
+            display: flex; flex-direction: column; align-items: center; gap: 4px;
+            font-weight: 600; text-transform: uppercase;
+        }
+        .mobile-tab.active { color: var(--primary); }
+        .mobile-tab .icon { font-size: 20px; }
+
+        /* ===== Toast notifications ===== */
+        .toast-container {
+            position: fixed; top: 72px; right: 16px; z-index: 300;
+            display: flex; flex-direction: column; gap: 8px;
+        }
+        .toast {
+            background: #161b22; border: 1px solid rgba(255,255,255,0.1);
+            border-left: 4px solid var(--primary); border-radius: 8px;
+            padding: 12px 16px; font-size: 13px; min-width: 280px;
+            animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+        }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: none; opacity: 1; } }
+        @keyframes fadeOut { to { opacity: 0; transform: translateX(100%); } }
+
+        /* Stats bar */
+        .stats-bar {
+            display: flex; gap: 24px; padding: 10px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+            font-size: 12px; color: var(--text-muted);
+        }
+        .stat-item { display: flex; align-items: center; gap: 6px; }
+        .stat-value { color: var(--text-main); font-weight: 600; }
+
+        /* Nickname modal */
+        .nickname-modal {
+            position: fixed; inset: 0; z-index: 500;
+            background: rgba(0,0,0,0.85); display: flex;
+            align-items: center; justify-content: center;
+            backdrop-filter: blur(8px);
+        }
+        .nickname-modal.hidden { display: none; }
+        .nickname-card {
+            background: #161b22; border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 40px; text-align: center; width: 90%; max-width: 400px;
+            animation: slideUp 0.4s ease;
+        }
+        .nickname-card h2 {
+            color: var(--primary); margin-bottom: 8px; font-size: 24px;
+        }
+        .nickname-card p { color: var(--text-muted); margin-bottom: 24px; font-size: 14px; }
+        .nickname-card input {
+            width: 100%; padding: 14px; border-radius: 10px;
+            background: rgba(255,255,255,0.05);
+            border: 2px solid rgba(255,255,255,0.1);
+            color: white; font-size: 16px; text-align: center;
+            outline: none; margin-bottom: 16px;
+        }
+        .nickname-card input:focus { border-color: var(--primary); }
+    </style>
+</head>
+<body>
+    <!-- Nickname Entry -->
+    <div class="nickname-modal" id="nicknameModal">
+        <div class="nickname-card">
+            <h2>MIDONLY<span style="color:white">.GG</span></h2>
+            <p>Введи никнейм, чтобы войти в лобби</p>
+            <input type="text" id="nicknameInput" placeholder="Твой никнейм..." maxlength="20" autofocus>
+            <button class="btn btn-primary btn-lg" onclick="enterSite()">Войти</button>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-left">
+            <a href="/" class="logo">MIDONLY<span>.GG</span></a>
+            <div class="theme-switch">
+                <button class="theme-btn dire active" onclick="setTheme('dire')">&#9760; Dire</button>
+                <button class="theme-btn radiant" onclick="setTheme('radiant')">&#9728; Radiant</button>
+            </div>
+            <div class="online-indicator">
+                <div class="online-dot"></div>
+                <span id="onlineCount">0 онлайн</span>
+            </div>
+        </div>
+        <div class="header-right">
+            <div class="user-block">
+                <span class="mmr-val" id="userMmr">? MMR</span>
+                <span style="color: rgba(255,255,255,0.1)">|</span>
+                <span class="nickname" id="userNick">—</span>
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="randomizeMmr()">&#127922; Рандом MMR</button>
+        </div>
+    </header>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toasts"></div>
+
+    <!-- Main Layout -->
+    <div class="layout-wrapper">
+        <main class="main-layout">
+            <!-- Left Panel: Chat -->
+            <aside class="panel" id="chatPanel">
+                <div class="chat-tabs">
+                    <div class="tab active" data-tab="global">&#127760; Глобальный</div>
+                    <div class="tab" data-tab="lobby">&#128172; Лобби чат</div>
+                </div>
+                <div class="chat-area" id="chatArea"></div>
+                <div class="chat-input-box">
+                    <input type="text" id="chatInput" placeholder="Сообщение..." maxlength="200">
+                    <button class="btn btn-primary btn-sm" onclick="sendChat()">&#10148;</button>
+                </div>
+            </aside>
+
+            <!-- Center Panel: Lobby List -->
+            <section class="panel">
+                <div class="panel-header">
+                    <span>&#9876; Активные Лобби (<span id="lobbyCount">0</span>)</span>
+                    <button class="btn btn-primary btn-sm" onclick="openCreateModal()">+ Создать</button>
+                </div>
+                <div class="stats-bar">
+                    <div class="stat-item">Всего матчей: <span class="stat-value" id="totalMatches">0</span></div>
+                    <div class="stat-item">Сегодня: <span class="stat-value" id="todayMatches">0</span></div>
+                </div>
+                <div class="lobby-list" id="lobbyList"></div>
+            </section>
+
+            <!-- Right Panel: Match Details -->
+            <section class="panel" id="detailPanel">
+                <div class="panel-header">&#128736; Параметры матча</div>
+                <div id="detailContent">
+                    <div class="empty-state">
+                        <div class="icon">&#9876;</div>
+                        <div style="font-size: 16px; font-weight: 600;">Выбери лобби</div>
+                        <div style="font-size: 13px;">Нажми на карточку лобби слева, чтобы увидеть детали</div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Mobile Bottom Tabs -->
+    <div class="mobile-tabs">
+        <button class="mobile-tab" onclick="showMobilePanel('chat')"><span class="icon">&#128172;</span>Чат</button>
+        <button class="mobile-tab active" onclick="showMobilePanel('lobbies')"><span class="icon">&#9876;</span>Лобби</button>
+        <button class="mobile-tab" onclick="showMobilePanel('details')"><span class="icon">&#128736;</span>Детали</button>
+    </div>
+
+    <!-- Create Lobby Modal -->
+    <div class="modal-overlay" id="createModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Создать лобби</h3>
+                <button class="modal-close" onclick="closeCreateModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Название лобби</label>
+                    <input type="text" id="lobbyTitle" placeholder="Mid Solo..." maxlength="40">
+                </div>
+                <div class="form-group">
+                    <label>Выбери героя</label>
+                    <div class="hero-grid" id="heroGrid"></div>
+                </div>
+                <div class="form-group">
+                    <label>Правила</label>
+                    <textarea id="lobbyRules" placeholder="First Blood / Tower...">First Blood / Tower
+No Bottle, No Raindrops
+Руны: запрещены
+Лес: запрещён</textarea>
+                </div>
+                <button class="btn btn-gold btn-lg" onclick="createLobby()">&#9876; Создать лобби</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // ===== State =====
+    let currentUser = '';
+    let currentMmr = 0;
+    let selectedLobby = null;
+    let selectedHero = null;
+    let ws = null;
+    let lobbiesData = [];
+
+    // ===== Nickname entry =====
+    document.getElementById('nicknameInput').addEventListener('keydown', e => {
+        if (e.key === 'Enter') enterSite();
+    });
+
+    function enterSite() {
+        const nick = document.getElementById('nicknameInput').value.trim();
+        if (!nick) return;
+        currentUser = nick;
+        currentMmr = 1000 + Math.floor(Math.random() * 8000);
+        document.getElementById('userNick').textContent = nick;
+        document.getElementById('userMmr').textContent = currentMmr.toLocaleString() + ' MMR';
+        document.getElementById('nicknameModal').classList.add('hidden');
+        initApp();
+    }
+
+    function randomizeMmr() {
+        currentMmr = 1000 + Math.floor(Math.random() * 8000);
+        document.getElementById('userMmr').textContent = currentMmr.toLocaleString() + ' MMR';
+        showToast('MMR обновлён: ' + currentMmr);
+    }
+
+    // ===== Theme =====
+    function setTheme(theme) {
+        const body = document.body;
+        const btnDire = document.querySelector('.theme-btn.dire');
+        const btnRadiant = document.querySelector('.theme-btn.radiant');
+        if (theme === 'radiant') {
+            body.classList.add('radiant-theme');
+            btnRadiant.classList.add('active');
+            btnDire.classList.remove('active');
+        } else {
+            body.classList.remove('radiant-theme');
+            btnDire.classList.add('active');
+            btnRadiant.classList.remove('active');
+        }
+    }
+
+    // ===== Init =====
+    function initApp() {
+        connectWebSocket();
+        loadChatHistory();
+        loadLobbies();
+        loadHeroes();
+        simulateOnline();
+    }
+
+    // ===== WebSocket =====
+    function connectWebSocket() {
+        const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+        ws = new WebSocket(`${proto}//${location.host}/ws/chat`);
+        ws.onmessage = (e) => {
+            const data = JSON.parse(e.data);
+            if (data.type === 'chat') {
+                appendChatMessage(data.user, data.text);
+            }
+        };
+        ws.onclose = () => setTimeout(connectWebSocket, 3000);
+    }
+
+    // ===== Chat =====
+    async function loadChatHistory() {
+        try {
+            const res = await fetch('/api/chat/history');
+            const msgs = await res.json();
+            const area = document.getElementById('chatArea');
+            area.innerHTML = '';
+            msgs.forEach(m => appendChatMessage(m.user, m.text, false));
+        } catch (e) { console.error(e); }
+    }
+
+    function appendChatMessage(user, text, scroll = true) {
+        const area = document.getElementById('chatArea');
+        const div = document.createElement('div');
+        div.className = 'msg';
+        div.innerHTML = `<span class="msg-user">${escapeHtml(user)}:</span> ${escapeHtml(text)}`;
+        area.appendChild(div);
+        if (scroll) area.scrollTop = area.scrollHeight;
+    }
+
+    function sendChat() {
+        const input = document.getElementById('chatInput');
+        const text = input.value.trim();
+        if (!text || !ws || ws.readyState !== WebSocket.OPEN) return;
+        ws.send(JSON.stringify({ user: currentUser, text }));
+        input.value = '';
+    }
+
+    document.getElementById('chatInput').addEventListener('keydown', e => {
+        if (e.key === 'Enter') sendChat();
+    });
+
+    // ===== Lobbies =====
+    async function loadLobbies() {
+        try {
+            const res = await fetch('/api/lobbies');
+            lobbiesData = await res.json();
+            renderLobbies();
+        } catch (e) { console.error(e); }
+    }
+
+    function renderLobbies() {
+        const list = document.getElementById('lobbyList');
+        document.getElementById('lobbyCount').textContent = lobbiesData.length;
+        document.getElementById('totalMatches').textContent = (lobbiesData.length * 17 + 342).toString();
+        document.getElementById('todayMatches').textContent = lobbiesData.length.toString();
+
+        list.innerHTML = lobbiesData.map(lb => `
+            <div class="lobby-card ${selectedLobby === lb.id ? 'selected' : ''}"
+                 onclick="selectLobby('${lb.id}')">
+                <img src="${lb.hero_icon}" alt="${escapeHtml(lb.hero)}" class="hero-icon"
+                     onerror="this.style.background='var(--primary)'; this.alt='?'">
+                <div class="lobby-info">
+                    <div class="lobby-title">${escapeHtml(lb.title)}</div>
+                    <div class="lobby-meta">&#9876; ${escapeHtml(lb.hero)} &middot; Хост: ${escapeHtml(lb.host)}</div>
+                </div>
+                <div class="lobby-badge">Открыто</div>
+            </div>
+        `).join('');
+    }
+
+    function selectLobby(id) {
+        selectedLobby = id;
+        renderLobbies();
+        const lb = lobbiesData.find(l => l.id === id);
+        if (!lb) return;
+
+        const rules = lb.rules.split('|').map(r => `<span>&#8226; ${escapeHtml(r.trim())}</span>`).join('');
+
+        document.getElementById('detailContent').innerHTML = `
+            <div class="match-detail">
+                <div class="detail-hero-banner">
+                    <img src="${lb.hero_icon}" alt="${escapeHtml(lb.hero)}"
+                         onerror="this.style.background='var(--primary)'">
+                    <div>
+                        <div style="font-size: 20px; font-weight: bold;">${escapeHtml(lb.title)}</div>
+                        <div style="color: var(--gold); font-size: 13px;">Хост: ${escapeHtml(lb.host)}</div>
+                        <div style="color: var(--text-muted); font-size: 12px; margin-top: 4px;">Герой: ${escapeHtml(lb.hero)}</div>
+                    </div>
+                </div>
+                <div class="rules-container">
+                    <div class="rules-title">&#128220; Правила матча</div>
+                    <div class="rules-text">${rules}</div>
+                </div>
+                <button class="btn btn-gold btn-lg" onclick="joinLobby('${lb.id}')">&#9876; Вступить в бой</button>
+                <div style="margin-top: 20px;">
+                    <div class="panel-header" style="padding: 12px 0; font-size: 11px; min-height: auto;">&#128172; Чат лобби</div>
+                    <div class="chat-area" style="max-height: 140px; padding: 12px 0;">
+                        <div class="msg" style="color: var(--text-muted); text-align: center; font-style: italic; border: none;">Ожидание оппонента...</div>
+                    </div>
+                    <div class="chat-input-box" style="padding: 8px 0; background: none; border: none;">
+                        <input type="text" placeholder="Написать оппоненту...">
+                        <button class="btn btn-primary btn-sm">&#10148;</button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    function joinLobby(id) {
+        const lb = lobbiesData.find(l => l.id === id);
+        showToast(`Ты присоединился к лобби ${lb ? lb.title : '#' + id}!`);
+    }
+
+    // ===== Create Lobby =====
+    function openCreateModal() {
+        document.getElementById('createModal').classList.add('active');
+    }
+    function closeCreateModal() {
+        document.getElementById('createModal').classList.remove('active');
+    }
+    document.getElementById('createModal').addEventListener('click', e => {
+        if (e.target === e.currentTarget) closeCreateModal();
+    });
+
+    async function loadHeroes() {
+        try {
+            const res = await fetch('/api/heroes');
+            const heroes = await res.json();
+            const grid = document.getElementById('heroGrid');
+            grid.innerHTML = heroes.map(h => `
+                <div class="hero-option ${selectedHero === h.key ? 'selected' : ''}"
+                     onclick="selectHeroOption('${h.key}')">
+                    <img src="https://cdn.cloudflare.steamstatic.com/apps/dota2/images/dota_react/heroes/${h.key}.png"
+                         alt="${h.name}"
+                         onerror="this.parentElement.style.background='var(--primary)'">
+                    <div class="hero-name">${h.name}</div>
+                </div>
+            `).join('');
+        } catch (e) { console.error(e); }
+    }
+
+    function selectHeroOption(key) {
+        selectedHero = key;
+        document.querySelectorAll('.hero-option').forEach(el => {
+            el.classList.toggle('selected', el.querySelector('img')?.alt === key || el.onclick.toString().includes(key));
+        });
+        loadHeroes();
+    }
+
+    async function createLobby() {
+        const title = document.getElementById('lobbyTitle').value.trim() || `[RU] Mid Solo — ${currentUser}`;
+        const rules = document.getElementById('lobbyRules').value.trim();
+
+        try {
+            const res = await fetch('/api/lobbies', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    title,
+                    host: currentUser,
+                    hero: selectedHero,
+                    rules: rules.replace(/\n/g, ' | '),
+                }),
+            });
+            const data = await res.json();
+            showToast(`Лобби "${data.title}" создано!`);
+            closeCreateModal();
+            selectedHero = null;
+            document.getElementById('lobbyTitle').value = '';
+            await loadLobbies();
+        } catch (e) {
+            showToast('Ошибка создания лобби');
+        }
+    }
+
+    // ===== Toast =====
+    function showToast(text) {
+        const container = document.getElementById('toasts');
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.textContent = text;
+        container.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+
+    // ===== Online counter simulation =====
+    function simulateOnline() {
+        const base = 120 + Math.floor(Math.random() * 80);
+        document.getElementById('onlineCount').textContent = base + ' онлайн';
+        setInterval(() => {
+            const n = base + Math.floor(Math.random() * 20) - 10;
+            document.getElementById('onlineCount').textContent = n + ' онлайн';
+        }, 5000);
+    }
+
+    // ===== Mobile panels =====
+    function showMobilePanel(panel) {
+        const panels = document.querySelectorAll('.main-layout > *');
+        const tabs = document.querySelectorAll('.mobile-tab');
+        tabs.forEach(t => t.classList.remove('active'));
+
+        if (panel === 'chat') {
+            panels.forEach((p, i) => p.style.display = i === 0 ? 'flex' : 'none');
+            tabs[0].classList.add('active');
+        } else if (panel === 'lobbies') {
+            panels.forEach((p, i) => p.style.display = i === 1 ? 'flex' : 'none');
+            tabs[1].classList.add('active');
+        } else {
+            panels.forEach((p, i) => p.style.display = i === 2 ? 'flex' : 'none');
+            tabs[2].classList.add('active');
+        }
+    }
+
+    // ===== Chat tabs =====
+    document.querySelectorAll('.chat-tabs .tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.chat-tabs .tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+        });
+    });
+
+    // ===== Utility =====
+    function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+    </script>
+</body>
+</html>
